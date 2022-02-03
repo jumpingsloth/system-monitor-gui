@@ -17,6 +17,7 @@ public:
 
 private slots:
     void update_monitor();
+    void update_time();
 
 private:
     Ui::MainWindow *ui;

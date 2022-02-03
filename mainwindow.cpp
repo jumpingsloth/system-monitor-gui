@@ -6,6 +6,9 @@
 #include <QString>
 #include <sstream>
 #include <iostream>
+#include <QDateTime>
+#include <QTime>
+#include <QTimeZone>
 
 /*
 0: user – time spent in user mode.
@@ -39,14 +42,23 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update_monitor()));
-    timer->start(3000);
+    QTimer *timer1 = new QTimer(this);
+    connect(timer1, SIGNAL(timeout()), this, SLOT(update_monitor()));
+    timer1->start(1500);
+
+    QTimer *timer2 = new QTimer(this);
+    connect(timer2, SIGNAL(timeout()), this, SLOT(update_time()));
+    timer2->start(50);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::update_time() {
+    ui->date_label->setText(QDateTime::currentDateTime().toString("dddd MMM dd.MM.yyyy"));
+    ui->clock_label->setText(QTime::currentTime().toString("t hh:mm:ss"));
 }
 
 void MainWindow::update_monitor() {
@@ -69,8 +81,8 @@ void MainWindow::update_monitor() {
     ui->uptime_bar->setFormat(QString::number((int)(100 * (bar_value / day_minutes))) + " % of day " + QString::number(ceil(uptime_minutes / day_minutes)));
     ui->uptime_bar->setValue(bar_value);
 
-    double cpu = cpu_usage();
-    ui->processor_lcd->display(QString::number(cpu));
+//    double cpu = cpu_usage();
+//    ui->processor_lcd->display(QString::number(cpu));
 //    cout << "cpu updated: " << cpu << endl;
 }
 
