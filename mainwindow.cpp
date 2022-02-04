@@ -36,7 +36,7 @@
 #define S_GUEST         8
 #define S_GUEST_NICE    9
 
-#define KB_GB_FACTOR 9.5367431640625e-7
+#define BYTES_FACTOR 9.5367431640625e-7
 
 using namespace std;
 
@@ -47,8 +47,10 @@ using namespace std;
 const vector<string> temp_color_dark = {"rgb(38, 162, 105)", "rgb(229, 165, 10)", "rgb(198, 70, 0)", "rgb(165, 29, 45)", "rgb(97, 53, 131)"};
 const vector<string> temp_color_light = {"rgb(87, 227, 137)", "rgb(248, 228, 92)", "rgb(255, 163, 72)", "rgb(237, 51, 59)", "rgb(192, 97, 203)"};
 
-long long recieved_packages = -1;
-long long sent_packages = -1;
+long long received_bytes = -1;
+long long sent_bytes = -1;
+long long highest_received = 0;
+long long highest_sent = 0;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -85,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *timer5 = new QTimer(this);
     connect(timer5, SIGNAL(timeout()), this, SLOT(update_networking()));
-    timer5->start(1300);
+    timer5->start(1000);
 
     QTimer *timer6 = new QTimer(this);
     connect(timer6, SIGNAL(timeout()), this, SLOT(update_uptime()));
@@ -107,11 +109,11 @@ void MainWindow::update_time() {
 }
 
 void MainWindow::update_memory() {
-    vector<int> mem_data = sys_used_memory();
-    int used_mem_kb = mem_data[0];
-    int total_mem = mem_data[1];
+    vector<long> mem_data = sys_used_memory();
+    long used_mem_kb = mem_data[0];
+    long total_mem = mem_data[1];
 
-    double used_mem_gb = used_mem_kb * KB_GB_FACTOR;
+    double used_mem_gb = used_mem_kb * BYTES_FACTOR;
 
     ui->memory_lcd->display(QString::number(used_mem_gb, 'g', 2));
     ui->memory_bar->setMinimum(0.);
@@ -124,6 +126,33 @@ void MainWindow::update_disk() {
 }
 
 void MainWindow::update_networking() {
+    vector<long long> rs_bytes_second = sys_networking();
+    double received_mb = rs_bytes_second[0] * BYTES_FACTOR;
+    double sent_mb = rs_bytes_second[1] * BYTES_FACTOR;
+
+
+
+    ui->networkR_lcd->display(QString::number(received_mb, 'g', 2));
+    ui->networkS_lcd->display(QString::number(sent_mb, 'g', 2));
+
+    ui->networkR_bar->setMinimum(0);
+    if (highest_received > 0) {
+        ui->networkR_bar->setMaximum(highest_received * BYTES_FACTOR);
+    } else {
+        ui->networkR_bar->setMaximum(0);
+    }
+
+    ui->networkR_bar->setValue(received_mb);
+
+    ui->networkS_bar->setMinimum(0);
+    if (highest_sent > 0) {
+        ui->networkS_bar->setMaximum(highest_sent * BYTES_FACTOR);
+    } else {
+        ui->networkS_bar->setMaximum(0);
+    }
+
+    ui->networkS_bar->setValue(sent_mb);
+
 
 }
 
@@ -179,24 +208,66 @@ void MainWindow::update_cpu_temp() {
     ui->cpu_temp_bar->setStyleSheet(temp_style);
 }
 
-vector<double> MainWindow::sys_networking_ud() {
+vector<long long> MainWindow::sys_networking() {
     ifstream network_file("/proc/net/dev");
 
-    vector<string> network_entries;
+    vector<string> network_received;
+    vector<string> network_sent;
     string line;
 
     while (getline(network_file, line)) {
         if (!((line.find("Inter-") != string::npos) || (line.find("face") != string::npos) || (line.find("lo:") != string::npos))) {
             istringstream ss(line);
             string entry;
+            vector<string> entries;
             while (ss >> entry) {
-                network_entries.push_back(entry);
+                entries.push_back(entry);
             }
+            network_received.push_back(entries[1]);
+            network_sent.push_back(entries[9]);
         }
     }
+
+    long long total_received = 0;
+    for (string element : network_received) {
+        total_received += stoll(element);
+    }
+
+    long long total_sent = 0;
+    for (string element : network_sent) {
+        total_sent += stoll(element);
+    }
+
+    vector<long long> output;
+
+    if (received_bytes != -1) {
+        long long received_second = total_received - received_bytes;
+        output.push_back(received_second);
+        if (received_second > highest_received) {
+            highest_received = received_second;
+        }
+        received_bytes = total_received;
+    } else {
+        received_bytes = total_received;
+        output.push_back(0);
+    }
+
+    if (sent_bytes != -1) {
+        long long sent_second = total_sent - sent_bytes;
+        output.push_back(sent_second);
+        if (sent_second > highest_sent) {
+            highest_sent = sent_second;
+        }
+        sent_bytes = total_sent;
+    } else {
+        sent_bytes = total_sent;
+        output.push_back(0);
+    }
+
+    return output;
 }
 
-vector<int> MainWindow::sys_used_memory() {
+vector<long> MainWindow::sys_used_memory() {
     ifstream meminfo_file("/proc/meminfo");
 
     string mem_total;
@@ -232,11 +303,11 @@ vector<int> MainWindow::sys_used_memory() {
         }
     }
 
-    int mem_total_int = stoi(mem_total);
-    int mem_free_int = stoi(mem_free);
-    int used_memory_kb = mem_total_int - mem_free_int;
+    long mem_total_num = stoi(mem_total);
+    long mem_free_num = stoi(mem_free);
+    long used_memory_kb = mem_total_num - mem_free_num;
 
-    return {used_memory_kb, mem_total_int};
+    return {used_memory_kb, mem_total_num};
 
 }
 

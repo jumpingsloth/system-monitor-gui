@@ -30,7 +30,7 @@ private:
 
     int cpu_usage();
     int cpu_temp();
-    std::vector<int> sys_used_memory();
-    std::vector<double> sys_networking_ud();
+    std::vector<long> sys_used_memory();
+    std::vector<long long> sys_networking();
 };
 #endif // MAINWINDOW_H
