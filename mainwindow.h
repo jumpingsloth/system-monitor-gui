@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,12 +17,20 @@ public:
     ~MainWindow();
 
 private slots:
-    void update_monitor();
+    void update_cpu_usage();
+    void update_cpu_temp();
+    void update_disk();
+    void update_memory();
+    void update_networking();
+    void update_uptime();
     void update_time();
 
 private:
     Ui::MainWindow *ui;
 
     int cpu_usage();
+    int cpu_temp();
+    std::vector<int> sys_used_memory();
+    std::vector<double> sys_networking_ud();
 };
 #endif // MAINWINDOW_H

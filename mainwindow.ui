@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
-    <height>494</height>
+    <width>680</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,117 +25,18 @@
 }</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="3">
-     <widget class="QLCDNumber" name="memory_lcd">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>50</height>
-       </size>
-      </property>
+    <item row="5" column="1">
+     <widget class="QProgressBar" name="cpu_temp_bar">
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>70</height>
+        <height>20</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLCDNumber {
-	color: white;
-	border: 1px solid white;
-}</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QLCDNumber" name="networkR_lcd">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>70</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLCDNumber {
-	color: white;
-	border: 1px solid white;
-}</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
       </property>
       <property name="font">
        <font>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
+        <pointsize>10</pointsize>
        </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel {
-	color: white;
-}</string>
-      </property>
-      <property name="text">
-       <string>Processor</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="2">
-     <widget class="QLabel" name="label_6">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel {
-	color: white;
-}</string>
-      </property>
-      <property name="text">
-       <string>Network Sending</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="3">
-     <widget class="QProgressBar" name="memory_bar">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>35</height>
-       </size>
       </property>
       <property name="styleSheet">
        <string notr="true">QProgressBar {
@@ -147,74 +48,27 @@
 QProgressBar::chunk {
 	background: qlineargradient(
 		spread:pad, x1:0, y1:0, x2:1, y2:0,
-		stop:0 rgb(38, 162, 105),
-		stop:1 rgb(87, 227, 137))
+		stop:0 rgb(165, 29, 45),
+		stop:1 rgb(237, 51, 59))
 
-}</string>
-      </property>
-      <property name="value">
-       <number>24</number>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QProgressBar" name="networkR_bar">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>35</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QProgressBar {
-	color: white;
-	border: 1px solid white;
-	text-align: center;
 }
-
-QProgressBar::chunk {
-	background: qlineargradient(
-		spread:pad, x1:0, y1:0, x2:1, y2:0,
-		stop:0 rgb(38, 162, 105),
-		stop:1 rgb(87, 227, 137))
-
-}</string>
+</string>
       </property>
       <property name="value">
        <number>24</number>
       </property>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QLabel" name="label_3">
+    <item row="7" column="1" colspan="3">
+     <widget class="QLabel" name="label_8">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="font">
-       <font>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel {
-	color: white;
-}</string>
-      </property>
       <property name="text">
-       <string>Memory</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <string/>
       </property>
      </widget>
     </item>
@@ -241,41 +95,7 @@ QProgressBar::chunk {
      </widget>
     </item>
     <item row="8" column="3">
-     <widget class="QProgressBar" name="uptime_bar">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>35</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QProgressBar {
-	color: white;
-	border: 1px solid white;
-	text-align: center;
-}
-
-QProgressBar::chunk {
-	background: qlineargradient(
-		spread:pad, x1:0, y1:0, x2:1, y2:0,
-		stop:0 rgb(38, 162, 105),
-		stop:1 rgb(87, 227, 137))
-
-}</string>
-      </property>
-      <property name="value">
-       <number>24</number>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="2">
-     <widget class="QLabel" name="label_2">
+     <widget class="QLabel" name="label_4">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -284,6 +104,7 @@ QProgressBar::chunk {
       </property>
       <property name="font">
        <font>
+        <family>Monospace</family>
         <pointsize>13</pointsize>
         <bold>true</bold>
        </font>
@@ -294,32 +115,10 @@ QProgressBar::chunk {
 }</string>
       </property>
       <property name="text">
-       <string>Hard Disk</string>
+       <string>Uptime (m)</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="3">
-     <widget class="QLCDNumber" name="uptime_lcd">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>70</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLCDNumber {
-	color: white;
-	border: 1px solid white;
-}</string>
       </property>
      </widget>
     </item>
@@ -345,35 +144,8 @@ QProgressBar::chunk {
       </property>
      </widget>
     </item>
-    <item row="6" column="3">
-     <widget class="QLabel" name="label_4">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel {
-	color: white;
-}</string>
-      </property>
-      <property name="text">
-       <string>Uptime</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="2">
-     <widget class="QProgressBar" name="networkS_bar">
+    <item row="3" column="1">
+     <widget class="QProgressBar" name="processor_bar">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -440,8 +212,108 @@ QProgressBar::chunk {
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QProgressBar" name="processor_bar">
+    <item row="8" column="2">
+     <widget class="QLabel" name="label_6">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+}</string>
+      </property>
+      <property name="text">
+       <string>Network Sending 🠕</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+}</string>
+      </property>
+      <property name="text">
+       <string>Hard Disk mb/s</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLCDNumber" name="memory_lcd">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLCDNumber {
+	color: white;
+	border: 1px solid white;
+}</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QLCDNumber" name="networkR_lcd">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLCDNumber {
+	color: white;
+	border: 1px solid white;
+}</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <widget class="QProgressBar" name="memory_bar">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -474,7 +346,119 @@ QProgressBar::chunk {
       </property>
      </widget>
     </item>
-    <item row="7" column="2">
+    <item row="0" column="3">
+     <widget class="QLabel" name="clock_label">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>22</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+	padding-right: 10px;
+}</string>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" colspan="2">
+     <widget class="QLabel" name="date_label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+	padding-left: 10px
+}</string>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="3">
+     <widget class="QLCDNumber" name="uptime_lcd">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLCDNumber {
+	color: white;
+	border: 1px solid white;
+}</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLabel" name="label_7">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>10</pointsize>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+}</string>
+      </property>
+      <property name="text">
+       <string>Temperature</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="2">
      <widget class="QLCDNumber" name="networkS_lcd">
       <property name="minimumSize">
        <size>
@@ -496,7 +480,63 @@ QProgressBar::chunk {
       </property>
      </widget>
     </item>
-    <item row="6" column="1">
+    <item row="1" column="3">
+     <widget class="QLabel" name="label_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+}</string>
+      </property>
+      <property name="text">
+       <string>Memory</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>13</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+	color: white;
+}</string>
+      </property>
+      <property name="text">
+       <string>Processor %</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
      <widget class="QLabel" name="label_5">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -506,6 +546,7 @@ QProgressBar::chunk {
       </property>
       <property name="font">
        <font>
+        <family>Monospace</family>
         <pointsize>13</pointsize>
         <bold>true</bold>
        </font>
@@ -516,74 +557,112 @@ QProgressBar::chunk {
 }</string>
       </property>
       <property name="text">
-       <string>Network Receiving</string>
+       <string>Network Receiving 🠗</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="2">
-     <widget class="QLabel" name="date_label">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+    <item row="10" column="1">
+     <widget class="QProgressBar" name="networkR_bar">
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>60</height>
+        <height>0</height>
        </size>
       </property>
-      <property name="font">
-       <font>
-        <family>Monospace</family>
-        <pointsize>13</pointsize>
-        <bold>true</bold>
-       </font>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">QLabel {
+       <string notr="true">QProgressBar {
 	color: white;
-	padding-left: 10px
+	border: 1px solid white;
+	text-align: center;
+}
+
+QProgressBar::chunk {
+	background: qlineargradient(
+		spread:pad, x1:0, y1:0, x2:1, y2:0,
+		stop:0 rgb(38, 162, 105),
+		stop:1 rgb(87, 227, 137))
+
 }</string>
       </property>
-      <property name="text">
-       <string>TextLabel</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      <property name="value">
+       <number>24</number>
       </property>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QLabel" name="clock_label">
+    <item row="10" column="2">
+     <widget class="QProgressBar" name="networkS_bar">
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>60</height>
+        <height>0</height>
        </size>
       </property>
-      <property name="font">
-       <font>
-        <family>Monospace</family>
-        <pointsize>22</pointsize>
-        <bold>true</bold>
-       </font>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">QLabel {
+       <string notr="true">QProgressBar {
 	color: white;
-	padding-right: 10px;
+	border: 1px solid white;
+	text-align: center;
+}
+
+QProgressBar::chunk {
+	background: qlineargradient(
+		spread:pad, x1:0, y1:0, x2:1, y2:0,
+		stop:0 rgb(38, 162, 105),
+		stop:1 rgb(87, 227, 137))
+
 }</string>
       </property>
-      <property name="text">
-       <string>TextLabel</string>
+      <property name="value">
+       <number>24</number>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </widget>
+    </item>
+    <item row="10" column="3">
+     <widget class="QProgressBar" name="uptime_bar">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QProgressBar {
+	color: white;
+	border: 1px solid white;
+	text-align: center;
+}
+
+QProgressBar::chunk {
+	background: qlineargradient(
+		spread:pad, x1:0, y1:0, x2:1, y2:0,
+		stop:0 rgb(38, 162, 105),
+		stop:1 rgb(87, 227, 137))
+
+}</string>
+      </property>
+      <property name="value">
+       <number>24</number>
       </property>
      </widget>
     </item>
@@ -594,7 +673,7 @@ QProgressBar::chunk {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>732</width>
+     <width>680</width>
      <height>23</height>
     </rect>
    </property>
