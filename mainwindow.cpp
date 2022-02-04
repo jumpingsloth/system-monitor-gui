@@ -37,6 +37,7 @@
 #define S_GUEST_NICE    9
 
 #define BYTES_FACTOR 9.5367431640625e-7
+#define BYTES_KIB_FACTOR 0.0078125
 
 using namespace std;
 
@@ -73,9 +74,9 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(timer1, SIGNAL(timeout()), this, SLOT(update_cpu_usage()));
 //    timer1->start(1300);
 
-//    QTimer *timer2 = new QTimer(this);
-//    connect(timer2, SIGNAL(timeout()), this, SLOT(update_cpu_temp()));
-//    timer2->start(1300);
+    QTimer *timer2 = new QTimer(this);
+    connect(timer2, SIGNAL(timeout()), this, SLOT(update_cpu_temp()));
+    timer2->start(1300);
 
 //    QTimer *timer3 = new QTimer(this);
 //    connect(timer3, SIGNAL(timeout()), this, SLOT(update_disk()));
@@ -127,31 +128,50 @@ void MainWindow::update_disk() {
 
 void MainWindow::update_networking() {
     vector<long long> rs_bytes_second = sys_networking();
-    double received_mb = rs_bytes_second[0] * BYTES_FACTOR;
-    double sent_mb = rs_bytes_second[1] * BYTES_FACTOR;
+
+    long long received = rs_bytes_second[0];
+
+    if (received > 500) {
+        ui->networkR_lcd->display(QString::number(received * BYTES_KIB_FACTOR, 'g', 2));
+        ui->networkR_label->setText("Network Rec. 🠗 Kbit/s");
+    } else {
+        ui->networkR_lcd->display(QString::number(received));
+        ui->networkR_label->setText("Network Rec. 🠗 Bytes/s");
+    }
+
+    long long sent = rs_bytes_second[1];
+    if (sent > 500) {
+        ui->networkS_lcd->display(QString::number(sent * BYTES_KIB_FACTOR, 'g', 2));
+        ui->networkS_label->setText("Network Send 🠕 Kbit/s");
+    } else {
+        ui->networkS_lcd->display(QString::number(sent));
+        ui->networkS_label->setText("Network Send 🠕 Bytes/s");
+    }
 
 
 
-    ui->networkR_lcd->display(QString::number(received_mb, 'g', 2));
-    ui->networkS_lcd->display(QString::number(sent_mb, 'g', 2));
+
+    ui->networkS_lcd->display(QString::number(sent));
 
     ui->networkR_bar->setMinimum(0);
-    if (highest_received > 0) {
-        ui->networkR_bar->setMaximum(highest_received * BYTES_FACTOR);
-    } else {
-        ui->networkR_bar->setMaximum(0);
-    }
+//    if (highest_received > 0) {
+//        ui->networkR_bar->setMaximum(highest_received);
+//    } else {
+//        ui->networkR_bar->setMaximum(0);
+//    }
+    ui->networkR_bar->setMaximum(131072); // 1 Mbit
 
-    ui->networkR_bar->setValue(received_mb);
+    ui->networkR_bar->setValue(received);
 
     ui->networkS_bar->setMinimum(0);
-    if (highest_sent > 0) {
-        ui->networkS_bar->setMaximum(highest_sent * BYTES_FACTOR);
-    } else {
-        ui->networkS_bar->setMaximum(0);
-    }
+//    if (highest_sent > 0) {
+//        ui->networkS_bar->setMaximum(highest_sent);
+//    } else {
+//        ui->networkS_bar->setMaximum(0);
+//    }
+    ui->networkS_bar->setMaximum(131072); // 1 Mbit
 
-    ui->networkS_bar->setValue(sent_mb);
+    ui->networkS_bar->setValue(sent);
 
 
 }
@@ -202,7 +222,10 @@ void MainWindow::update_cpu_temp() {
                              "spread:pad, x1:0, y1:0, x2:1, y2:0,"  \
                              "stop:0 ";
 
-    int temp_color_factor = round(cpu_temp_value / (100.0 / 5.0));
+    int temp_color_factor = round(cpu_temp_value / (100.0 / 5.0)) - 1;
+    if (temp_color_factor > 4) {
+        temp_color_factor = 4;
+    }
     temp_style.append(QString::fromStdString(temp_color_dark[temp_color_factor] + ", stop:1 " + temp_color_light[temp_color_factor] + ")}"));
 
     ui->cpu_temp_bar->setStyleSheet(temp_style);
@@ -312,14 +335,16 @@ vector<long> MainWindow::sys_used_memory() {
 }
 
 int MainWindow::cpu_temp() {
-    string path = "/sys/class/hwmon";
+    string path = "/sys/class/hwmon/hwmon2";
     vector<long> temp_vector;
 
     for (const auto & file : filesystem::directory_iterator(path)) {
-        long temp;
-        ifstream temp_file(file.path().string() + "/device/temp");
-        temp_file >> temp;
-        temp_vector.push_back(temp);
+        if ((file.path().string().find("temp") != string::npos) && file.path().string().find("input") != string::npos) {
+            ifstream temp_file(file.path().string());
+            string temp_str;
+            temp_file >> temp_str;
+            temp_vector.push_back(stol(temp_str));
+        }
     }
 
     long long temp_sum = 0;
