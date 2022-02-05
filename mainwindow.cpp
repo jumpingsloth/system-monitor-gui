@@ -36,8 +36,14 @@
 #define S_GUEST         8
 #define S_GUEST_NICE    9
 
-#define BYTES_FACTOR 9.5367431640625e-7
+#define KB_MB_FACTOR 9.5367431640625e-7
 #define BYTES_KIB_FACTOR 0.0078125
+#define BYTES_MIB_FACTOR 7.6294e-6
+
+#define BYTES_GIB 134217728
+#define BYTES_KIB 128
+
+#define NETWORKING_UPDATE_TIME 3
 
 using namespace std;
 
@@ -45,13 +51,13 @@ using namespace std;
 
 //  rgb(87, 227, 137) rgb(248, 228, 92) rgb(255, 163, 72) rgb(237, 51, 59) rgb(192, 97, 203)
 
-const vector<string> temp_color_dark = {"rgb(38, 162, 105)", "rgb(229, 165, 10)", "rgb(198, 70, 0)", "rgb(165, 29, 45)", "rgb(97, 53, 131)"};
-const vector<string> temp_color_light = {"rgb(87, 227, 137)", "rgb(248, 228, 92)", "rgb(255, 163, 72)", "rgb(237, 51, 59)", "rgb(192, 97, 203)"};
+//const vector<string> temp_color_dark = {"rgb(38, 162, 105)", "rgb(229, 165, 10)", "rgb(198, 70, 0)", "rgb(165, 29, 45)", "rgb(97, 53, 131)"};
+//const vector<string> temp_color_light = {"rgb(87, 227, 137)", "rgb(248, 228, 92)", "rgb(255, 163, 72)", "rgb(237, 51, 59)", "rgb(192, 97, 203)"};
 
-long long received_bytes = -1;
-long long sent_bytes = -1;
-long long highest_received = 0;
-long long highest_sent = 0;
+//long long received_bytes = -1;
+//long long sent_bytes = -1;
+//long long highest_received = 0;
+//long long highest_sent = 0;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -59,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    initialize_gui();
 
 //    void update_cpu_usage();
 //    void update_cpu_temp();
@@ -88,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *timer5 = new QTimer(this);
     connect(timer5, SIGNAL(timeout()), this, SLOT(update_networking()));
-    timer5->start(1000);
+    timer5->start(NETWORKING_UPDATE_TIME * 1000);
 
     QTimer *timer6 = new QTimer(this);
     connect(timer6, SIGNAL(timeout()), this, SLOT(update_uptime()));
@@ -104,6 +112,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::initialize_gui() {
+
+}
+
 void MainWindow::update_time() {
     ui->date_label->setText(QDateTime::currentDateTime().toString("dddd MMM dd.MM.yyyy"));
     ui->clock_label->setText(QTime::currentTime().toString("t hh:mm:ss"));
@@ -114,7 +126,7 @@ void MainWindow::update_memory() {
     long used_mem_kb = mem_data[0];
     long total_mem = mem_data[1];
 
-    double used_mem_gb = used_mem_kb * BYTES_FACTOR;
+    double used_mem_gb = used_mem_kb * KB_MB_FACTOR;
 
     ui->memory_lcd->display(QString::number(used_mem_gb, 'g', 2));
     ui->memory_bar->setMinimum(0.);
@@ -129,9 +141,30 @@ void MainWindow::update_disk() {
 void MainWindow::update_networking() {
     vector<long long> rs_bytes_second = sys_networking();
 
-    long long received = rs_bytes_second[0];
+    long long received = round(rs_bytes_second[0] / NETWORKING_UPDATE_TIME);
+    long long sent = round(rs_bytes_second[1] / NETWORKING_UPDATE_TIME);
 
-    if (received > 500) {
+
+    ui->networkR_bar->setFormat("% of 1 Gbit/s");
+
+    ui->networkR_bar->setMinimum(0);
+    ui->networkR_bar->setMaximum(BYTES_GIB);
+
+    ui->networkR_bar->setValue(received);
+
+    ui->networkS_bar->setFormat("% of 1 Gbit/s");
+
+    ui->networkS_bar->setMinimum(0);
+    ui->networkS_bar->setMaximum(BYTES_GIB);
+
+    ui->networkS_bar->setValue(sent);
+
+
+
+    if (received > BYTES_KIB * 500) {
+        ui->networkR_lcd->display(QString::number(received * BYTES_MIB_FACTOR, 'g', 2));
+        ui->networkR_label->setText("Network Rec. 🠗 Mbit/s");
+    } else if (received > 500) {
         ui->networkR_lcd->display(QString::number(received * BYTES_KIB_FACTOR, 'g', 2));
         ui->networkR_label->setText("Network Rec. 🠗 Kbit/s");
     } else {
@@ -139,8 +172,11 @@ void MainWindow::update_networking() {
         ui->networkR_label->setText("Network Rec. 🠗 Bytes/s");
     }
 
-    long long sent = rs_bytes_second[1];
-    if (sent > 500) {
+
+    if (sent > BYTES_KIB * 500) {
+        ui->networkS_lcd->display(QString::number(sent * BYTES_MIB_FACTOR, 'g', 2));
+        ui->networkS_label->setText("Network Send 🠕 Mbit/s");
+    } else if (sent > 500) {
         ui->networkS_lcd->display(QString::number(sent * BYTES_KIB_FACTOR, 'g', 2));
         ui->networkS_label->setText("Network Send 🠕 Kbit/s");
     } else {
@@ -150,29 +186,29 @@ void MainWindow::update_networking() {
 
 
 
+//    cout << "rec: " << received << "\nsent: " << sent << endl;
 
-    ui->networkS_lcd->display(QString::number(sent));
+//    int received_percent = 0;
+//    if (received > 0) {
+//        received_percent = round(received / 131072.) * 100;
+//    }
+//    int sent_percent = 0;
+//    if (sent > 0) {
+//        sent_percent = round(sent / 131072.) * 100;
+//    }
 
-    ui->networkR_bar->setMinimum(0);
+
 //    if (highest_received > 0) {
 //        ui->networkR_bar->setMaximum(highest_received);
 //    } else {
 //        ui->networkR_bar->setMaximum(0);
 //    }
-    ui->networkR_bar->setMaximum(131072); // 1 Mbit
 
-    ui->networkR_bar->setValue(received);
-
-    ui->networkS_bar->setMinimum(0);
 //    if (highest_sent > 0) {
 //        ui->networkS_bar->setMaximum(highest_sent);
 //    } else {
 //        ui->networkS_bar->setMaximum(0);
 //    }
-    ui->networkS_bar->setMaximum(131072); // 1 Mbit
-
-    ui->networkS_bar->setValue(sent);
-
 
 }
 
@@ -252,22 +288,22 @@ vector<long long> MainWindow::sys_networking() {
     }
 
     long long total_received = 0;
-    for (string element : network_received) {
+    for (string & element : network_received) {
         total_received += stoll(element);
     }
 
     long long total_sent = 0;
-    for (string element : network_sent) {
+    for (string & element : network_sent) {
         total_sent += stoll(element);
     }
 
     vector<long long> output;
 
     if (received_bytes != -1) {
-        long long received_second = total_received - received_bytes;
-        output.push_back(received_second);
-        if (received_second > highest_received) {
-            highest_received = received_second;
+        long long received_diff = total_received - received_bytes;
+        output.push_back(received_diff);
+        if (received_diff > highest_received) {
+            highest_received = received_diff;
         }
         received_bytes = total_received;
     } else {
@@ -276,10 +312,10 @@ vector<long long> MainWindow::sys_networking() {
     }
 
     if (sent_bytes != -1) {
-        long long sent_second = total_sent - sent_bytes;
-        output.push_back(sent_second);
-        if (sent_second > highest_sent) {
-            highest_sent = sent_second;
+        long long sent_diff = total_sent - sent_bytes;
+        output.push_back(sent_diff);
+        if (sent_diff > highest_sent) {
+            highest_sent = sent_diff;
         }
         sent_bytes = total_sent;
     } else {
@@ -326,8 +362,8 @@ vector<long> MainWindow::sys_used_memory() {
         }
     }
 
-    long mem_total_num = stoi(mem_total);
-    long mem_free_num = stoi(mem_free);
+    long mem_total_num = stol(mem_total);
+    long mem_free_num = stol(mem_free);
     long used_memory_kb = mem_total_num - mem_free_num;
 
     return {used_memory_kb, mem_total_num};
