@@ -78,6 +78,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    initialize_gui();
 
+    update_cpu_usage();
+    update_cpu_temp();
+    update_disk();
+    update_memory();
+    update_networking();
+    update_uptime();
+    update_time();
+
     QTimer *timer1 = new QTimer(this);
     connect(timer1, SIGNAL(timeout()), this, SLOT(update_cpu_usage()));
     timer1->start(1000);
@@ -88,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *timer3 = new QTimer(this);
     connect(timer3, SIGNAL(timeout()), this, SLOT(update_disk()));
-    timer3->start(1000);
+    timer3->start(2000);
 
     QTimer *timer4 = new QTimer(this);
     connect(timer4, SIGNAL(timeout()), this, SLOT(update_memory()));
@@ -142,10 +150,16 @@ void MainWindow::update_memory() {
 void MainWindow::update_disk() {
     double disk_activity = sys_disk_activity();
 
-    ui->disk_lcd->display(QString::number(disk_activity, 'g', 2));
     ui->disk_bar->setMinimum(0);
     ui->disk_bar->setMaximum(100);
-    ui->disk_bar->setValue(disk_activity);
+
+    if (disk_activity > 100) {
+        ui->disk_lcd->display(QString::number(100));
+        ui->disk_bar->setValue(100);
+    } else {
+        ui->disk_lcd->display(QString::number(round(disk_activity)));
+        ui->disk_bar->setValue(disk_activity);
+    }
 }
 
 void MainWindow::update_networking() {
@@ -270,10 +284,9 @@ double MainWindow::sys_disk_activity() {
 
         if (!(regex_match(disk_stats[2], regex(".*[0-9]+")))) { // device name
             vector<long long> disk_stats_num;
-            for (vector<string>::iterator it = disk_stats.begin(); it != disk_stats.end(); ++it) {
-                if (it - disk_stats.begin() > 2) { // all entries after device name
-                    disk_stats_num.push_back(stoll(*it));
-                }
+
+            for (size_t i=3; i<disk_stats.size(); i++) {
+                disk_stats_num.push_back(stoll(disk_stats[i]));
             }
             disk_info.push_back(disk_stats_num);
         }
@@ -287,9 +300,9 @@ double MainWindow::sys_disk_activity() {
     }
 
     long long total_time = uptime.count();
-    long long active_time;
+    long long active_time = 0;
     for (const auto & disk : disk_info) {
-        active_time = disk[3] + disk[7]; // time spent reading / writing (ms)
+        active_time += disk[3] + disk[7]; // time spent reading / writing (ms)
     }
 
     double output;
