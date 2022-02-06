@@ -33,7 +33,7 @@ private:
     int cpu_temp();
     std::vector<long> sys_used_memory();
     std::vector<long long> sys_networking();
-    long long sys_disk_activity();
+    double sys_disk_activity();
     void initialize_gui();
 
     std::vector<std::unique_ptr<std::thread>> initialize_threads;
@@ -49,7 +49,7 @@ private:
     long long last_active_time = -1;
     long long last_total_time = -1;
 
-    long long last_read_sectors = -1;
-    long long last_written_sectors = -1;
+    long long last_disk_total_time = -1;
+    long long last_disk_active_time = -1;
 };
 #endif // MAINWINDOW_H

@@ -11,6 +11,7 @@
 #include <QTimeZone>
 #include <vector>
 #include <filesystem>
+#include <regex>
 
 /*
 0: user – time spent in user mode.
@@ -47,20 +48,27 @@
 
 #define BYTES_SECTOR_SIZE 512
 
+// 1  major number
+// 2  minor mumber
+// 3  device name
+// 4  reads completed successfully
+// 5  reads merged
+// 6  sectors read
+// 7  time spent reading (ms)
+// 8  writes completed
+// 9  writes merged
+//10  sectors written
+//11  time spent writing (ms)
+//12  I/Os currently in progress
+//13  time spent doing I/Os (ms)
+//14  weighted time spent doing I/Os (ms)
+//15  discards completed successfully
+//16  discards merged
+//17  sectors discarded
+//18  time spent discarding
+
+
 using namespace std;
-
-//  rgb(38, 162, 105) rgb(229, 165, 10) rgb(198, 70, 0) rgb(165, 29, 45) rgb(97, 53, 131)
-
-//  rgb(87, 227, 137) rgb(248, 228, 92) rgb(255, 163, 72) rgb(237, 51, 59) rgb(192, 97, 203)
-
-//const vector<string> temp_color_dark = {"rgb(38, 162, 105)", "rgb(229, 165, 10)", "rgb(198, 70, 0)", "rgb(165, 29, 45)", "rgb(97, 53, 131)"};
-//const vector<string> temp_color_light = {"rgb(87, 227, 137)", "rgb(248, 228, 92)", "rgb(255, 163, 72)", "rgb(237, 51, 59)", "rgb(192, 97, 203)"};
-
-//long long received_bytes = -1;
-//long long sent_bytes = -1;
-//long long highest_received = 0;
-//long long highest_sent = 0;
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -70,16 +78,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 //    initialize_gui();
 
-//    void update_cpu_usage();
-//    void update_cpu_temp();
-//    void update_disk();
-//    void update_memory();
-//    void update_networking();
-//    void update_uptime();
-//    void update_time();
-
-
-
     QTimer *timer1 = new QTimer(this);
     connect(timer1, SIGNAL(timeout()), this, SLOT(update_cpu_usage()));
     timer1->start(1000);
@@ -88,9 +86,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer2, SIGNAL(timeout()), this, SLOT(update_cpu_temp()));
     timer2->start(1300);
 
-//    QTimer *timer3 = new QTimer(this);
-//    connect(timer3, SIGNAL(timeout()), this, SLOT(update_disk()));
-//    timer3->start(1300);
+    QTimer *timer3 = new QTimer(this);
+    connect(timer3, SIGNAL(timeout()), this, SLOT(update_disk()));
+    timer3->start(1000);
 
     QTimer *timer4 = new QTimer(this);
     connect(timer4, SIGNAL(timeout()), this, SLOT(update_memory()));
@@ -142,7 +140,12 @@ void MainWindow::update_memory() {
 }
 
 void MainWindow::update_disk() {
+    double disk_activity = sys_disk_activity();
 
+    ui->disk_lcd->display(QString::number(disk_activity, 'g', 2));
+    ui->disk_bar->setMinimum(0);
+    ui->disk_bar->setMaximum(100);
+    ui->disk_bar->setValue(disk_activity);
 }
 
 void MainWindow::update_networking() {
@@ -190,32 +193,6 @@ void MainWindow::update_networking() {
         ui->networkS_lcd->display(QString::number(sent));
         ui->networkS_label->setText("Network Send 🠕 Bytes/s");
     }
-
-
-
-//    cout << "rec: " << received << "\nsent: " << sent << endl;
-
-//    int received_percent = 0;
-//    if (received > 0) {
-//        received_percent = round(received / 131072.) * 100;
-//    }
-//    int sent_percent = 0;
-//    if (sent > 0) {
-//        sent_percent = round(sent / 131072.) * 100;
-//    }
-
-
-//    if (highest_received > 0) {
-//        ui->networkR_bar->setMaximum(highest_received);
-//    } else {
-//        ui->networkR_bar->setMaximum(0);
-//    }
-
-//    if (highest_sent > 0) {
-//        ui->networkS_bar->setMaximum(highest_sent);
-//    } else {
-//        ui->networkS_bar->setMaximum(0);
-//    }
 
 }
 
@@ -276,14 +253,62 @@ void MainWindow::update_cpu_temp() {
     ui->cpu_temp_bar->setStyleSheet(temp_style);
 }
 
-long long MainWindow::sys_disk_activity() {
+double MainWindow::sys_disk_activity() {
     ifstream disk_file("/proc/diskstats");
 
     string line;
+    vector<vector<long long>> disk_info;
 
     while (getline(disk_file, line)) {
+        istringstream ss(line);
 
+        vector<string> disk_stats;
+        string entry;
+        while (ss >> entry) {
+            disk_stats.push_back(entry);
+        }
+
+        if (!(regex_match(disk_stats[2], regex(".*[0-9]+")))) { // device name
+            vector<long long> disk_stats_num;
+            for (vector<string>::iterator it = disk_stats.begin(); it != disk_stats.end(); ++it) {
+                if (it - disk_stats.begin() > 2) { // all entries after device name
+                    disk_stats_num.push_back(stoll(*it));
+                }
+            }
+            disk_info.push_back(disk_stats_num);
+        }
     }
+
+    // get uptime
+    chrono::milliseconds uptime(0u);
+    double uptime_seconds;
+    if (ifstream("/proc/uptime", ios::in) >> uptime_seconds) {
+        uptime = chrono::milliseconds(static_cast<unsigned long long>(uptime_seconds*1000.0));
+    }
+
+    long long total_time = uptime.count();
+    long long active_time;
+    for (const auto & disk : disk_info) {
+        active_time = disk[3] + disk[7]; // time spent reading / writing (ms)
+    }
+
+    double output;
+    if ((last_disk_total_time != -1) && (last_disk_active_time != -1)) {
+        long long total_time_diff = total_time - last_disk_total_time;
+        long long active_time_diff = active_time - last_disk_active_time;
+
+        output = 100. * (double)active_time_diff / (double)total_time_diff;
+
+        last_disk_total_time = total_time;
+        last_disk_active_time = active_time;
+    } else {
+        output = 0;
+
+        last_disk_total_time = total_time;
+        last_disk_active_time = active_time;
+    }
+
+    return output;
 }
 
 vector<long long> MainWindow::sys_networking() {
@@ -307,12 +332,12 @@ vector<long long> MainWindow::sys_networking() {
     }
 
     long long total_received = 0;
-    for (string & element : network_received) {
+    for (const string & element : network_received) {
         total_received += stoll(element);
     }
 
     long long total_sent = 0;
-    for (string & element : network_sent) {
+    for (const string & element : network_sent) {
         total_sent += stoll(element);
     }
 
