@@ -45,6 +45,8 @@
 
 #define NETWORKING_UPDATE_TIME 3
 
+#define BYTES_SECTOR_SIZE 512
+
 using namespace std;
 
 //  rgb(38, 162, 105) rgb(229, 165, 10) rgb(198, 70, 0) rgb(165, 29, 45) rgb(97, 53, 131)
@@ -66,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    initialize_gui();
+//    initialize_gui();
 
 //    void update_cpu_usage();
 //    void update_cpu_temp();
@@ -78,9 +80,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-//    QTimer *timer1 = new QTimer(this);
-//    connect(timer1, SIGNAL(timeout()), this, SLOT(update_cpu_usage()));
-//    timer1->start(1300);
+    QTimer *timer1 = new QTimer(this);
+    connect(timer1, SIGNAL(timeout()), this, SLOT(update_cpu_usage()));
+    timer1->start(1000);
 
     QTimer *timer2 = new QTimer(this);
     connect(timer2, SIGNAL(timeout()), this, SLOT(update_cpu_temp()));
@@ -113,6 +115,11 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::initialize_gui() {
+    vector<QProgressBar *> ui_bars = {ui->processor_bar, ui->cpu_temp_bar, ui->disk_bar, ui->memory_bar, ui->networkR_bar, ui->networkS_bar, ui->uptime_bar};
+
+    ui_bars[0]->setMinimum(0);
+    ui_bars[0]->setMaximum(0);
+    ui_bars[0]->setValue(80);
 
 }
 
@@ -216,9 +223,11 @@ void MainWindow::update_cpu_usage() {
 
     // update cpu usage
 
-//    double cpu = cpu_usage();
-//    ui->processor_lcd->display(QString::number(cpu));
-//    cout << "cpu updated: " << cpu << endl;
+    double cpu = cpu_usage();
+    ui->processor_lcd->display(QString::number(cpu, 'g', 2));
+    ui->processor_bar->setMinimum(0);
+    ui->processor_bar->setMaximum(100);
+    ui->processor_bar->setValue(cpu);
 }
 
 void MainWindow::update_uptime() {
@@ -265,6 +274,16 @@ void MainWindow::update_cpu_temp() {
     temp_style.append(QString::fromStdString(temp_color_dark[temp_color_factor] + ", stop:1 " + temp_color_light[temp_color_factor] + ")}"));
 
     ui->cpu_temp_bar->setStyleSheet(temp_style);
+}
+
+long long MainWindow::sys_disk_activity() {
+    ifstream disk_file("/proc/diskstats");
+
+    string line;
+
+    while (getline(disk_file, line)) {
+
+    }
 }
 
 vector<long long> MainWindow::sys_networking() {
@@ -391,7 +410,7 @@ int MainWindow::cpu_temp() {
     return round((temp_sum / 1000.0) / (double)temp_vector.size());
 }
 
-int MainWindow::cpu_usage() {
+double MainWindow::cpu_usage() {
     ifstream stat_file("/proc/stat");
 
     string line;
@@ -399,7 +418,7 @@ int MainWindow::cpu_usage() {
     const size_t STR_CPU_SIZE = STR_CPU.size();
     const int NUM_CPU_STATES = 10;
     string cpu_entry;
-    vector<string> cpu_states;
+    vector<long long> cpu_states;
 
     while(getline(stat_file, line)) {
         if (line.find(STR_CPU) != string::npos) {
@@ -407,17 +426,15 @@ int MainWindow::cpu_usage() {
 
             ss >> cpu_entry;
 
-            if (cpu_entry.size() > STR_CPU_SIZE) {
-                cpu_entry.erase(0, STR_CPU_SIZE);
+            if (cpu_entry == STR_CPU) {
                 string temp_state;
                 for (int i=0; i < NUM_CPU_STATES; ++i) {
                     ss >> temp_state;
-                    cpu_states.push_back(temp_state);
+                    cpu_states.push_back(stoll(temp_state));
                 }
+                break;
             }
-            break;
         }
-
     }
 
     if (cpu_states.empty()) {
@@ -429,21 +446,35 @@ int MainWindow::cpu_usage() {
 //        cout << item << endl;
 //    }
 
-    int idle_time = stoi(cpu_states[S_IDLE]) + stoi(cpu_states[S_IOWAIT]);
-    int active_time = stoi(cpu_states[S_USER]) +
-                      stoi(cpu_states[S_NICE]) +
-                      stoi(cpu_states[S_SYSTEM]) +
-                      stoi(cpu_states[S_IRQ]) +
-                      stoi(cpu_states[S_SOFTIRQ]) +
-                      stoi(cpu_states[S_STEAL]) +
-                      stoi(cpu_states[S_GUEST]) +
-                      stoi(cpu_states[S_GUEST_NICE]);
-    int total_time = idle_time + active_time;
+    long long idle_time = cpu_states[S_IDLE] + cpu_states[S_IOWAIT];
+    long long active_time = cpu_states[S_USER] +
+                      cpu_states[S_NICE] +
+                      cpu_states[S_SYSTEM] +
+                      cpu_states[S_IRQ] +
+                      cpu_states[S_SOFTIRQ] +
+                      cpu_states[S_STEAL] +
+                      cpu_states[S_GUEST] +
+                      cpu_states[S_GUEST_NICE];
+    long long total_time = idle_time + active_time;
 
 //    cout << "idle time:" << idle_time << "\nactive time: " << active_time << endl;
 //    double output = (total_time - idle_time) / total_time * 100.;
-    double output = 100. * active_time / total_time;
-    cout << output << endl;
+
+//    double output = 100. * (double)active_time / (double)total_time;
+    double output;
+    if ((last_active_time != -1) && last_total_time != -1) {
+        long long active_diff = active_time - last_active_time;
+        long long total_diff = total_time - last_total_time;
+        output = 100. * (double)active_diff / (double)total_diff;
+
+        last_active_time = active_time;
+        last_total_time = total_time;
+    } else {
+        output = 0;
+        last_active_time = active_time;
+        last_total_time = total_time;
+    }
+
     return output;
 }
 
