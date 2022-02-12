@@ -127,7 +127,11 @@ double LinuxSystem::sys_disk_activity() {
         last_disk_active_time = active_time;
     }
 
-    return output;
+    if (output < 0) {
+        return -1;
+    } else {
+        return output;
+    }
 }
 
 vector<long long> LinuxSystem::sys_networking() {
@@ -186,6 +190,12 @@ vector<long long> LinuxSystem::sys_networking() {
         output.push_back(0);
     }
 
+    for (auto value : output) {
+        if (value < 0) {
+            return {-1};
+        }
+    }
+
     return output;
 }
 
@@ -227,13 +237,17 @@ vector<long> LinuxSystem::sys_used_memory() {
 
     long mem_total_num = stol(mem_total);
     long mem_free_num = stol(mem_free);
-    long used_memory_kb = mem_total_num - mem_free_num;
+    long used_memory = mem_total_num - mem_free_num;
 
-    return {used_memory_kb, mem_total_num};
+    if ((used_memory > 0) && (mem_total_num > 0)) {
+        return {used_memory, mem_total_num};
+    } else {
+        return {-1, -1};
+    }
 
 }
 
-int LinuxSystem::cpu_temp() {
+double LinuxSystem::cpu_temp() {
     string path = "/sys/class/hwmon/hwmon2";
     vector<long> temp_vector;
 
@@ -251,7 +265,13 @@ int LinuxSystem::cpu_temp() {
         temp_sum += x;
     }
 
-    return round((temp_sum / 1000.0) / (double)temp_vector.size());
+    double output = (temp_sum / 1000.0) / (double)temp_vector.size();
+
+    if (output < 0) {
+        return -1;
+    } else {
+        return output;
+    }
 }
 
 double LinuxSystem::cpu_usage() {
@@ -318,7 +338,11 @@ double LinuxSystem::cpu_usage() {
         last_total_time = total_time;
     }
 
-    return output;
+    if (output < 0) {
+        return -1;
+    } else {
+        return output;
+    }
 }
 
 

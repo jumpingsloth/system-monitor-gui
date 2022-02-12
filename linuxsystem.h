@@ -11,7 +11,7 @@ public:
 
 public:
     double cpu_usage();
-    int cpu_temp();
+    double cpu_temp();
     std::vector<long> sys_used_memory();
     std::vector<long long> sys_networking();
     double sys_disk_activity();

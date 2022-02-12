@@ -15,17 +15,15 @@
 
 #include "linuxsystem.h"
 
-#define KB_MB_FACTOR 9.5367431640625e-7
+#define KB_GB_FACTOR 9.5367431640625e-7
 #define BYTES_KIB_FACTOR 0.0078125
 #define BYTES_MIB_FACTOR 7.6294e-6
 
 #define BYTES_GIB 134217728
+#define BYTES_MIB 131072
 #define BYTES_KIB 128
 
 #define NETWORKING_UPDATE_TIME 3
-
-#define BYTES_SECTOR_SIZE 512
-
 
 using namespace std;
 
@@ -86,15 +84,25 @@ void MainWindow::update_time() {
 
 void MainWindow::update_memory() {
     vector<long> mem_data = sysAPI->sys_used_memory();
-    long used_mem_kb = mem_data[0];
+    long used_mem = mem_data[0];
     long total_mem = mem_data[1];
 
-    double used_mem_gb = used_mem_kb * KB_MB_FACTOR;
+    if ((used_mem == -1) || (total_mem == -1)) {
+        ui->memory_lcd->display("Err");
+        ui->memory_bar->setValue(0);
+        return;
+    }
 
-    ui->memory_lcd->display(QString::number(used_mem_gb, 'g', 2));
-    ui->memory_bar->setMinimum(0.);
-    ui->memory_bar->setMaximum(total_mem);
-    ui->memory_bar->setValue(used_mem_kb);
+    double used_mem_gb = used_mem * KB_GB_FACTOR;
+
+    ui->memory_lcd->display(QString::number(used_mem_gb, 'f', 1));
+    if (used_mem > total_mem) {
+        ui->memory_bar->setValue(100);
+    } else {
+        ui->memory_bar->setMinimum(0.);
+        ui->memory_bar->setMaximum(total_mem);
+        ui->memory_bar->setValue(used_mem);
+    }
 }
 
 void MainWindow::update_disk() {
@@ -102,6 +110,12 @@ void MainWindow::update_disk() {
 
     ui->disk_bar->setMinimum(0);
     ui->disk_bar->setMaximum(100);
+
+    if (disk_activity == -1) {
+        ui->disk_lcd->display("Err");
+        ui->disk_bar->setValue(0);
+        return;
+    }
 
     if (disk_activity > 100) {
         ui->disk_lcd->display(QString::number(100));
@@ -115,31 +129,35 @@ void MainWindow::update_disk() {
 void MainWindow::update_networking() {
     vector<long long> rs_bytes_second = sysAPI->sys_networking();
 
-    long long received = round(rs_bytes_second[0] / NETWORKING_UPDATE_TIME);
-    long long sent = round(rs_bytes_second[1] / NETWORKING_UPDATE_TIME);
-
-
     ui->networkR_bar->setFormat("% of 1 Gbit/s");
-
     ui->networkR_bar->setMinimum(0);
     ui->networkR_bar->setMaximum(BYTES_GIB);
 
-    ui->networkR_bar->setValue(received);
-
     ui->networkS_bar->setFormat("% of 1 Gbit/s");
-
     ui->networkS_bar->setMinimum(0);
     ui->networkS_bar->setMaximum(BYTES_GIB);
 
+    if (rs_bytes_second[0] == -1) {
+        ui->networkR_lcd->display("Err");
+        ui->networkS_lcd->display("Err");
+
+        ui->networkR_bar->setValue(0);
+        ui->networkS_bar->setValue(0);
+
+        return;
+    }
+
+    long long received = round(rs_bytes_second[0] / NETWORKING_UPDATE_TIME);
+    long long sent = round(rs_bytes_second[1] / NETWORKING_UPDATE_TIME);
+
+    ui->networkR_bar->setValue(received);
     ui->networkS_bar->setValue(sent);
 
-
-
-    if (received > BYTES_KIB * 500) {
-        ui->networkR_lcd->display(QString::number(received * BYTES_MIB_FACTOR, 'g', 2));
+    if (received > (BYTES_MIB / 2)) {
+        ui->networkR_lcd->display(QString::number(received * BYTES_MIB_FACTOR, 'f', 1));
         ui->networkR_label->setText("Network Rec. 🠗 Mbit/s");
-    } else if (received > 500) {
-        ui->networkR_lcd->display(QString::number(received * BYTES_KIB_FACTOR, 'g', 2));
+    } else if (received > (BYTES_KIB / 2)) {
+        ui->networkR_lcd->display(QString::number(received * BYTES_KIB_FACTOR, 'f', 1));
         ui->networkR_label->setText("Network Rec. 🠗 Kbit/s");
     } else {
         ui->networkR_lcd->display(QString::number(received));
@@ -147,11 +165,11 @@ void MainWindow::update_networking() {
     }
 
 
-    if (sent > BYTES_KIB * 500) {
-        ui->networkS_lcd->display(QString::number(sent * BYTES_MIB_FACTOR, 'g', 2));
+    if (sent > (BYTES_MIB / 2)) {
+        ui->networkS_lcd->display(QString::number(sent * BYTES_MIB_FACTOR, 'f', 1));
         ui->networkS_label->setText("Network Send 🠕 Mbit/s");
-    } else if (sent > 500) {
-        ui->networkS_lcd->display(QString::number(sent * BYTES_KIB_FACTOR, 'g', 2));
+    } else if (sent > (BYTES_KIB / 2)) {
+        ui->networkS_lcd->display(QString::number(sent * BYTES_KIB_FACTOR, 'f', 1));
         ui->networkS_label->setText("Network Send 🠕 Kbit/s");
     } else {
         ui->networkS_lcd->display(QString::number(sent));
@@ -165,10 +183,22 @@ void MainWindow::update_cpu_usage() {
     // update cpu usage
 
     double cpu = sysAPI->cpu_usage();
-    ui->processor_lcd->display(QString::number(cpu, 'g', 2));
+
+    if (cpu == -1) {
+        ui->processor_lcd->display("Err");
+        ui->processor_bar->setValue(0);
+        return;
+    }
+
+    ui->processor_lcd->display(QString::number(cpu, 'f', 1));
     ui->processor_bar->setMinimum(0);
     ui->processor_bar->setMaximum(100);
-    ui->processor_bar->setValue(cpu);
+
+    if (cpu > 100) {
+        ui->processor_bar->setValue(100);
+    } else {
+        ui->processor_bar->setValue(cpu);
+    }
 }
 
 void MainWindow::update_uptime() {
@@ -193,11 +223,25 @@ void MainWindow::update_uptime() {
 void MainWindow::update_cpu_temp() {
 
     // update cpu temp
-    int cpu_temp_value = sysAPI->cpu_temp();
-    ui->cpu_temp_bar->setFormat(QString::number(cpu_temp_value) + " °C");
+    int cpu_temp_value = round(sysAPI->cpu_temp());
+
     ui->cpu_temp_bar->setMinimum(0);
     ui->cpu_temp_bar->setMaximum(100);
-    ui->cpu_temp_bar->setValue(cpu_temp_value);
+
+    if (cpu_temp_value == -1) {
+        ui->cpu_temp_bar->setValue(0);
+        ui->cpu_temp_bar->setFormat("Error");
+        return;
+    }
+
+    ui->cpu_temp_bar->setFormat(QString::number(cpu_temp_value) + " °C");
+
+    if (cpu_temp_value > 100) {
+        ui->cpu_temp_bar->setValue(100);
+    } else {
+        ui->cpu_temp_bar->setValue(cpu_temp_value);
+    }
+
     QString temp_style = "QProgressBar {"   \
                              "color: white;"    \
                              "border: 1px solid white;" \
