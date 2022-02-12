@@ -11,13 +11,20 @@ CONFIG += c++11
 SOURCES += \
     linuxsystem.cpp \
     main.cpp \
-    mainwindow.cpp \
-    windowssystem.cpp
+    mainwindow.cpp
 
 HEADERS += \
     linuxsystem.h \
-    mainwindow.h \
-    windowssystem.h
+    mainwindow.h
+
+win32 {
+    SOURCES += windowssystem.cpp
+    HEADERS += windowssystem.h
+} else {
+    OTHER_FILES += \
+        windowssystem.cpp \
+        windowssystem.h
+}
 
 FORMS += \
     mainwindow.ui
